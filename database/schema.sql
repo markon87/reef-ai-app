@@ -50,14 +50,17 @@ CREATE TABLE IF NOT EXISTS analysis_results (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Updated_at trigger function
+-- Updated_at trigger function with secure search_path
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE 'plpgsql';
 
 -- Add updated_at trigger to tank_setups
 CREATE TRIGGER update_tank_setups_updated_at 
@@ -177,24 +180,5 @@ CREATE INDEX IF NOT EXISTS idx_tank_fish_tank_setup_id ON tank_fish(tank_setup_i
 CREATE INDEX IF NOT EXISTS idx_tank_corals_tank_setup_id ON tank_corals(tank_setup_id);
 CREATE INDEX IF NOT EXISTS idx_analysis_results_tank_setup_id ON analysis_results(tank_setup_id);
 
--- Optional: Create a view for complete tank setup with fish and corals
-CREATE OR REPLACE VIEW complete_tank_setups AS
-SELECT 
-    ts.*,
-    COALESCE(fish_data.fish, '[]'::json) as fish,
-    COALESCE(coral_data.corals, '[]'::json) as corals
-FROM tank_setups ts
-LEFT JOIN (
-    SELECT 
-        tank_setup_id,
-        json_agg(json_build_object('species_id', species_id, 'quantity', quantity)) as fish
-    FROM tank_fish 
-    GROUP BY tank_setup_id
-) fish_data ON ts.id = fish_data.tank_setup_id
-LEFT JOIN (
-    SELECT 
-        tank_setup_id,
-        json_agg(json_build_object('species_id', species_id, 'quantity', quantity)) as corals
-    FROM tank_corals 
-    GROUP BY tank_setup_id
-) coral_data ON ts.id = coral_data.tank_setup_id;
+-- Note: Removed complete_tank_setups view as it's not used in the application
+-- Data joining is handled in the application layer via TankSetupService
