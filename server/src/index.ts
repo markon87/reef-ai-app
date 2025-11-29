@@ -12,7 +12,13 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'], // Vite dev server ports
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:3000',
+    'https://reefai-cd607.web.app',           // Your Firebase hosting URL
+    'https://reefai-cd607.firebaseapp.com',  // Firebase alternative URL
+    'https://your-custom-domain.com'         // If you add custom domain later
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -157,7 +163,8 @@ app.use((err: Error, req: Request, res: Response) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Reef AI Server is running on port ${PORT}`);
-  console.log(`📡 Health check available at http://localhost:${PORT}/api/health`);
+  console.log(`📡 Health check available at /api/health`);
+  console.log(`🌊 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 export default app;

@@ -93,5 +93,10 @@ Thumbs.db
 *.tgz
 *.tar.gz
 
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
 # Setup/Documentation files with sensitive info
 SUPABASE_SETUP.md

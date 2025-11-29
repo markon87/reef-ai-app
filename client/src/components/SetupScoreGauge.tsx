@@ -26,7 +26,7 @@ export const SetupScoreGauge = ({ score }: SetupScoreGaugeProps) => {
   ];
 
   return (
-    <Box sx={{ position: 'relative', width: '100%', height: 200 }}>
+    <Box sx={{ position: 'relative', width: 300, height: 200 }}>
       {/* Nivo Pie Chart as Gauge */}
       <ResponsivePie
         data={data}

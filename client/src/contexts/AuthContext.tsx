@@ -89,7 +89,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = async () => {
     try {
       setLoading(true)
-      const { error } = await supabase.auth.signOut()
+      // Use local scope for logout to avoid 403 errors in production
+      const { error } = await supabase.auth.signOut({ scope: 'local' })
       return { error }
     } catch (error) {
       return { error: error as AuthError }

@@ -1,0 +1,21 @@
+{
+  "name": "reef-ai-app",
+  "version": "1.2.0",
+  "description": "AI-powered reef aquarium compatibility analysis app",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "cd client && npm run build",
+    "preview": "cd client && npm run preview",
+    "deploy:firebase": "npm run build && firebase deploy",
+    "deploy:staging": "npm run build && firebase deploy --only hosting:staging",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "keywords": ["reef", "aquarium", "ai", "analysis", "react", "supabase"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

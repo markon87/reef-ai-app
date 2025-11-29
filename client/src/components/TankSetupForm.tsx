@@ -14,9 +14,10 @@ import {
   FormControlLabel,
   Checkbox,
   OutlinedInput,
+  Button,
   type SelectChangeEvent
 } from '@mui/material';
-import { Add, Remove } from '@mui/icons-material';
+import { Add, Remove, Save } from '@mui/icons-material';
 import { fishSpecies, coralSpecies, tankVolumes, lightingOptions, filtrationOptions } from '../data/aquariumData';
 
 export interface TankSetup {
@@ -38,9 +39,10 @@ export interface TankSetup {
 interface TankSetupFormProps {
   onSetupChange: (setup: TankSetup) => void;
   initialSetup?: TankSetup | null;
+  onSaveSetup?: (setup: TankSetup) => void;
 }
 
-export const TankSetupForm = ({ onSetupChange, initialSetup }: TankSetupFormProps) => {
+export const TankSetupForm = ({ onSetupChange, initialSetup, onSaveSetup }: TankSetupFormProps) => {
   const [setup, setSetup] = useState<TankSetup>({
     volume: 75,
     lighting: 'led-medium',
@@ -67,7 +69,14 @@ export const TankSetupForm = ({ onSetupChange, initialSetup }: TankSetupFormProp
   };
 
   const addFish = () => {
-    const newFish = { species: fishSpecies[0].id, quantity: 1 };
+    // Find the first fish species that hasn't been added yet
+    const usedFishIds = setup.fish.map(f => f.species);
+    const availableFish = fishSpecies.find(species => !usedFishIds.includes(species.id));
+    
+    // If all fish species are used, fall back to the first one (user can change it)
+    const selectedFishId = availableFish ? availableFish.id : fishSpecies[0].id;
+    
+    const newFish = { species: selectedFishId, quantity: 1 };
     updateSetup({ fish: [...setup.fish, newFish] });
   };
 
@@ -84,7 +93,14 @@ export const TankSetupForm = ({ onSetupChange, initialSetup }: TankSetupFormProp
   };
 
   const addCoral = () => {
-    const newCoral = { species: coralSpecies[0].id, quantity: 1 };
+    // Find the first coral species that hasn't been added yet
+    const usedCoralIds = setup.corals.map(c => c.species);
+    const availableCoral = coralSpecies.find(species => !usedCoralIds.includes(species.id));
+    
+    // If all coral species are used, fall back to the first one (user can change it)
+    const selectedCoralId = availableCoral ? availableCoral.id : coralSpecies[0].id;
+    
+    const newCoral = { species: selectedCoralId, quantity: 1 };
     updateSetup({ corals: [...setup.corals, newCoral] });
   };
 
@@ -228,11 +244,20 @@ export const TankSetupForm = ({ onSetupChange, initialSetup }: TankSetupFormProp
                   label="Fish Species"
                   onChange={(e) => updateFish(index, 'species', e.target.value)}
                 >
-                  {fishSpecies.map((species) => (
-                    <MenuItem key={species.id} value={species.id}>
-                      {species.name} ({species.category})
-                    </MenuItem>
-                  ))}
+                  {fishSpecies.map((species) => {
+                    const isAlreadyAdded = setup.fish.some((f, i) => f.species === species.id && i !== index);
+                    return (
+                      <MenuItem 
+                        key={species.id} 
+                        value={species.id}
+                        disabled={isAlreadyAdded}
+                        sx={isAlreadyAdded ? { opacity: 0.5, fontStyle: 'italic' } : {}}
+                      >
+                        {species.name} ({species.category})
+                        {isAlreadyAdded && ' - Already Added'}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
               
@@ -278,11 +303,20 @@ export const TankSetupForm = ({ onSetupChange, initialSetup }: TankSetupFormProp
                   label="Coral Species"
                   onChange={(e) => updateCoral(index, 'species', e.target.value)}
                 >
-                  {coralSpecies.map((species) => (
-                    <MenuItem key={species.id} value={species.id}>
-                      {species.name} ({species.category})
-                    </MenuItem>
-                  ))}
+                  {coralSpecies.map((species) => {
+                    const isAlreadyAdded = setup.corals.some((c, i) => c.species === species.id && i !== index);
+                    return (
+                      <MenuItem 
+                        key={species.id} 
+                        value={species.id}
+                        disabled={isAlreadyAdded}
+                        sx={isAlreadyAdded ? { opacity: 0.5, fontStyle: 'italic' } : {}}
+                      >
+                        {species.name} ({species.category})
+                        {isAlreadyAdded && ' - Already Added'}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
               
@@ -353,6 +387,26 @@ export const TankSetupForm = ({ onSetupChange, initialSetup }: TankSetupFormProp
           </Box>
         </CardContent>
       </Card>
+
+      {/* Save Button */}
+      {onSaveSetup && (
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Save />}
+            onClick={() => onSaveSetup(setup)}
+            sx={{ 
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 'medium'
+            }}
+          >
+            Save Tank Setup
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

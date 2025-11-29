@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS analysis_results (
     tank_setup_id UUID NOT NULL REFERENCES tank_setups(id) ON DELETE CASCADE,
     score INTEGER NOT NULL CHECK (score >= 1 AND score <= 100),
     summary TEXT,
+    general_assessment TEXT,
     breakdown JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

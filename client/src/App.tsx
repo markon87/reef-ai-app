@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ThemeProvider, CssBaseline, GlobalStyles } from '@mui/material';
-import { 
+import { ThemeProvider, CssBaseline, GlobalStyles, alpha, useTheme, keyframes } from '@mui/material';
+import {
   Card, 
   CardContent, 
   TextField, 
@@ -11,28 +11,40 @@ import {
   CircularProgress,
   Paper,
   Tabs,
-  Tab
+  Tab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
-import { AutoFixHigh, Biotech, Description, Settings } from '@mui/icons-material';
+import { AutoFixHigh, Biotech, Description, Settings, FolderSpecial, Science, Psychology, TrendingUp } from '@mui/icons-material';
 import { Layout } from './components/Layout';
 import { FormattedResponse } from './components/FormattedResponse';
 import { SetupScoreGauge } from './components/SetupScoreGauge';
 import { AnalysisBreakdownComponent } from './components/AnalysisBreakdown';
 import { TankSetupForm, type TankSetup } from './components/TankSetupForm';
-import { SignInPrompt } from './components/SignInPrompt';
 import { AuthDialog } from './components/AuthDialog';
 import { SavedSetupsManager } from './components/SavedSetupsManager';
-import { type AnalysisResult } from './services/tankSetupService';
+import { MySetupsPage } from './components/MySetupsPage';
+import { LandingPage } from './components/LandingPage';
+import { type AnalysisResult, TankSetupService } from './services/tankSetupService';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { theme } from './theme';
+import { ThemeModeProvider, useThemeMode } from './contexts/ThemeContext';
+import { createReefTheme } from './theme';
 import { useAnalyzeTankMutation } from './store/api';
+import './styles/reef-theme.css';
 
 function AppContent() {
   const { user } = useAuth();
+  const theme = useTheme();
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [savedSetupsOpen, setSavedSetupsOpen] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [setupName, setSetupName] = useState("");
+  const [setupToSave, setSetupToSave] = useState<TankSetup | null>(null);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [tabValue, setTabValue] = useState(0); // 0 = Setup Form (primary), 1 = Description
   const [tankSetup, setTankSetup] = useState<TankSetup | null>(null);
   const [loadedAnalysis, setLoadedAnalysis] = useState<AnalysisResult | null>(null);
@@ -47,6 +59,43 @@ function AppContent() {
 
   // Use loaded analysis if available, otherwise use RTK Query result
   const currentAnalysis = loadedAnalysis || analysisResult;
+
+  const handleSaveSetup = async (setup: TankSetup) => {
+    if (!user) {
+      setAuthDialogOpen(true);
+      return;
+    }
+
+    setSetupToSave(setup);
+    setSaveDialogOpen(true);
+    setSetupName('');
+  };
+
+  const confirmSaveSetup = async () => {
+    if (!setupToSave || !setupName.trim()) return;
+
+    try {
+      const result = await TankSetupService.saveTankSetup(setupToSave, setupName.trim(), currentAnalysis || undefined);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setError('');
+        setSaveDialogOpen(false);
+        setSetupName('');
+        setSetupToSave(null);
+        setSuccess('Tank setup saved successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save setup');
+    }
+  };
+
+  const cancelSaveSetup = () => {
+    setSaveDialogOpen(false);
+    setSetupName('');
+    setSetupToSave(null);
+  };
 
   const convertSetupToDescription = (setup: TankSetup): string => {
     let description = `${setup.volume}-gallon saltwater reef tank with ${setup.lighting} lighting`;
@@ -158,13 +207,25 @@ function AppContent() {
     setSavedSetupsOpen(false);
   };
 
+  // Show landing page for unauthenticated users
+  if (!user) {
+    return <LandingPage />;
+  }
+
   return (
     <>
       <Layout>
         <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
           {/* Input Section */}
           <Box sx={{ flex: 1 }}>
-            <Card elevation={3}>
+            <Card 
+              sx={{
+                borderRadius: 3,
+                border: `1px solid ${theme.palette.divider}`,
+                background: theme.palette.background.paper,
+                boxShadow: `0 8px 32px ${theme.palette.action.hover}`,
+              }}
+            >
               <CardContent sx={{ p: 0 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', p: 3, pb: 1 }}>
                   <Biotech sx={{ mr: 1, color: 'primary.main' }} />
@@ -174,7 +235,7 @@ function AppContent() {
                 </Box>
 
                 {/* Tabs and Actions */}
-                <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                   <Tabs 
                     value={tabValue} 
                     onChange={handleTabChange} 
@@ -190,30 +251,25 @@ function AppContent() {
                       label="Description" 
                       iconPosition="start"
                     />
+                    <Tab 
+                      icon={<FolderSpecial />} 
+                      label="My Setups" 
+                      iconPosition="start"
+                    />
                   </Tabs>
-                  
-                  {/* Save/Load Buttons */}
-                  {user && (
-                    <Box sx={{ px: 2 }}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => setSavedSetupsOpen(true)}
-                        sx={{ mr: 1 }}
-                      >
-                        My Setups
-                      </Button>
-                    </Box>
-                  )}
                 </Box>
 
                 <Box sx={{ p: 3 }}>
                   {tabValue === 0 ? (
                     // Structured Form Tab (primary)
                     <Box sx={{ mb: 3 }}>
-                      <TankSetupForm onSetupChange={setTankSetup} initialSetup={tankSetup} />
+                      <TankSetupForm 
+                        onSetupChange={setTankSetup} 
+                        initialSetup={tankSetup}
+                        onSaveSetup={handleSaveSetup}
+                      />
                     </Box>
-                  ) : (
+                  ) : tabValue === 1 ? (
                     // Text Description Tab (alternative)
                     <TextField
                       fullWidth
@@ -226,6 +282,12 @@ function AppContent() {
                       onChange={(e) => setText(e.target.value)}
                       sx={{ mb: 3 }}
                     />
+                  ) : null}
+
+                  {success && (
+                    <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
+                      {success}
+                    </Alert>
                   )}
 
                   {(error || apiError) && (
@@ -234,22 +296,44 @@ function AppContent() {
                     </Alert>
                   )}
 
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    size="large"
-                    onClick={user ? handleAnalyze : () => setAuthDialogOpen(true)}
-                    disabled={
-                      isLoading || 
-                      (!user) ||
-                      (tabValue === 0 && (!tankSetup || (tankSetup.fish.length === 0 && tankSetup.corals.length === 0))) ||
-                      (tabValue === 1 && !text.trim())
-                    }
+                  {tabValue !== 2 && (
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      size="large"
+                      onClick={handleAnalyze}
+                      disabled={
+                        isLoading || 
+                        (tabValue === 0 && (!tankSetup || (tankSetup.fish.length === 0 && tankSetup.corals.length === 0))) ||
+                        (tabValue === 1 && !text.trim())
+                      }
                     startIcon={isLoading ? <CircularProgress size={20} /> : <AutoFixHigh />}
-                    sx={{ py: 1.5 }}
-                  >
-                    {!user ? 'Sign In to Analyze' : isLoading ? 'Analyzing...' : 'Analyze Tank'}
-                  </Button>
+                    sx={{ 
+                      py: 1.5,
+                      borderRadius: 3,
+                      fontSize: '1.1rem',
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                      '&:hover': {
+                        background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                      },
+                      '&:disabled': {
+                        background: theme.palette.action.disabledBackground,
+                      },
+                    }}
+                    >
+                      {isLoading ? 'Analyzing...' : 'Analyze Tank'}
+                    </Button>
+                  )}
+
+                  {/* My Setups Page Content */}
+                  {tabValue === 2 && (
+                    <MySetupsPage
+                      onLoadSetup={setTankSetup}
+                      onLoadAndAnalyze={handleLoadAndAnalyze}
+                      onLoadWithAnalysis={handleLoadWithAnalysis}
+                      onNavigateToSetup={() => setTabValue(0)}
+                    />
+                  )}
                 </Box>
               </CardContent>
             </Card>
@@ -257,20 +341,200 @@ function AppContent() {
 
           {/* Results Section */}
           <Box sx={{ flex: 1 }}>
-            {!user ? (
-              <SignInPrompt onSignInClick={() => setAuthDialogOpen(true)} />
+            {isLoading ? (
+              // Loading Animation
+              <Paper 
+                sx={{ 
+                  p: 6,
+                  borderRadius: 3,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  background: theme.palette.background.paper,
+                  boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.08)}`,
+                  textAlign: 'center',
+                  minHeight: 400,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <Box sx={{ mb: 4 }}>
+                  {/* Animated Icons */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: 2, 
+                    justifyContent: 'center',
+                    mb: 3
+                  }}>
+                    <Box sx={{
+                      animation: `${keyframes`
+                        0% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+                        50% { transform: translateY(-10px) rotate(180deg); opacity: 1; }
+                        100% { transform: translateY(0px) rotate(360deg); opacity: 0.7; }
+                      `} 2s ease-in-out infinite`,
+                      animationDelay: '0s'
+                    }}>
+                      <Science sx={{ fontSize: 40, color: 'primary.main' }} />
+                    </Box>
+                    <Box sx={{
+                      animation: `${keyframes`
+                        0% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+                        50% { transform: translateY(-10px) rotate(180deg); opacity: 1; }
+                        100% { transform: translateY(0px) rotate(360deg); opacity: 0.7; }
+                      `} 2s ease-in-out infinite`,
+                      animationDelay: '0.7s'
+                    }}>
+                      <Psychology sx={{ fontSize: 40, color: 'secondary.main' }} />
+                    </Box>
+                    <Box sx={{
+                      animation: `${keyframes`
+                        0% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+                        50% { transform: translateY(-10px) rotate(180deg); opacity: 1; }
+                        100% { transform: translateY(0px) rotate(360deg); opacity: 0.7; }
+                      `} 2s ease-in-out infinite`,
+                      animationDelay: '1.4s'
+                    }}>
+                      <TrendingUp sx={{ fontSize: 40, color: 'success.main' }} />
+                    </Box>
+                  </Box>
+
+                  {/* Pulsing Progress */}
+                  <CircularProgress 
+                    size={60}
+                    thickness={4}
+                    sx={{ 
+                      mb: 3,
+                      '& .MuiCircularProgress-circle': {
+                        strokeLinecap: 'round',
+                      }
+                    }}
+                  />
+                </Box>
+
+                <Typography 
+                  variant="h5" 
+                  component="h3" 
+                  sx={{ 
+                    mb: 2, 
+                    fontWeight: 600,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  Analyzing Your Reef Setup
+                </Typography>
+
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary"
+                  sx={{ 
+                    mb: 3,
+                    maxWidth: 400,
+                    lineHeight: 1.6
+                  }}
+                >
+                  Our AI is carefully evaluating your tank parameters, species compatibility, 
+                  equipment setup, and water chemistry to provide you with detailed insights...
+                </Typography>
+
+                {/* Animated Progress Steps */}
+                <Box sx={{ 
+                  display: 'flex',
+                  gap: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  {[0, 1, 2, 3, 4].map((index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: 'primary.main',
+                        animation: `${keyframes`
+                          0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+                          40% { transform: scale(1.2); opacity: 1; }
+                        `} 1.5s ease-in-out infinite`,
+                        animationDelay: `${index * 0.3}s`
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Paper>
             ) : currentAnalysis?.score ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {/* Score Gauge */}
-                <Paper elevation={2} sx={{ p: 3 }}>
-                  <Typography variant="h6" component="h3" sx={{ mb: 2, textAlign: 'center' }}>
+                {/* Tank Setup Assessment */}
+                <Paper 
+                  sx={{ 
+                    p: 3,
+                    borderRadius: 3,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    background: theme.palette.background.paper,
+                    boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.08)}`,
+                  }}
+                >
+                  <Typography variant="h6" component="h3" sx={{ mb: 3, textAlign: 'center' }}>
                     Tank Setup Assessment
                   </Typography>
-                  <SetupScoreGauge score={currentAnalysis.score} />
+                  
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    gap: 3, 
+                    alignItems: 'center'
+                  }}>
+                    {/* Gauge Section */}
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'center'
+                    }}>
+                      <SetupScoreGauge score={currentAnalysis.score} />
+                    </Box>
+                    
+                    {/* General Assessment Section */}
+                    <Box sx={{ width: '100%' }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          mb: 2, 
+                          color: 'primary.main',
+                          fontWeight: 600,
+                          textAlign: 'center'
+                        }}
+                      >
+                        General Assessment
+                      </Typography>
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          lineHeight: 1.7,
+                          color: 'text.primary',
+                          textAlign: 'justify',
+                          '& p': { mb: 2 },
+                          '& p:last-child': { mb: 0 }
+                        }}
+                      >
+                        {currentAnalysis.generalAssessment || 
+                         currentAnalysis.summary || 
+                         "No general assessment available. Please try running the analysis again."}
+                      </Typography>
+                    </Box>
+                  </Box>
                 </Paper>
 
                 {/* Analysis Results */}
-                <Paper elevation={2} sx={{ p: 3 }}>
+                <Paper 
+                  sx={{ 
+                    p: 3,
+                    borderRadius: 3,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    background: theme.palette.background.paper,
+                    boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.08)}`,
+                  }}
+                >
                   <Typography variant="h6" component="h3" sx={{ mb: 3 }}>
                     Detailed Analysis
                   </Typography>
@@ -282,7 +546,16 @@ function AppContent() {
                 </Paper>
               </Box>
             ) : (
-              <Paper elevation={2} sx={{ p: 3, minHeight: 400 }}>
+              <Paper 
+                sx={{ 
+                  p: 3, 
+                  minHeight: 400,
+                  borderRadius: 3,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  background: theme.palette.background.paper,
+                  boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.08)}`,
+                }}
+              >
                 <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
                   AI Analysis Results
                 </Typography>
@@ -311,24 +584,67 @@ function AppContent() {
         open={authDialogOpen} 
         onClose={() => setAuthDialogOpen(false)} 
       />
+
+      {/* Save Setup Dialog */}
+      <Dialog 
+        open={saveDialogOpen} 
+        onClose={cancelSaveSetup}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Save Tank Setup</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Give your tank setup a memorable name to save it for future use.
+          </Typography>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Setup Name"
+            placeholder="e.g., My 75g Reef Tank"
+            value={setupName}
+            onChange={(e) => setSetupName(e.target.value)}
+            variant="outlined"
+            sx={{ mt: 1 }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && setupName.trim()) {
+                confirmSaveSetup();
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelSaveSetup} color="inherit">
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmSaveSetup} 
+            variant="contained"
+            disabled={!setupName.trim()}
+          >
+            Save Setup
+          </Button>
+        </DialogActions>
+      </Dialog>
       
       {/* Saved Setups Manager */}
-      {user && (
-        <SavedSetupsManager
-          open={savedSetupsOpen}
-          onClose={() => setSavedSetupsOpen(false)}
-          onLoadSetup={(setup) => setTankSetup(setup)}
-          onLoadAndAnalyze={handleLoadAndAnalyze}
-          onLoadWithAnalysis={handleLoadWithAnalysis}
-          currentSetup={tankSetup}
-          currentAnalysis={currentAnalysis || null}
-        />
-      )}
+      <SavedSetupsManager
+        open={savedSetupsOpen}
+        onClose={() => setSavedSetupsOpen(false)}
+        onLoadSetup={(setup) => setTankSetup(setup)}
+        onLoadAndAnalyze={handleLoadAndAnalyze}
+        onLoadWithAnalysis={handleLoadWithAnalysis}
+        currentSetup={tankSetup}
+        currentAnalysis={currentAnalysis || null}
+      />
     </>
   );
 }
 
-function App() {
+function AppWrapper() {
+  const { mode } = useThemeMode();
+  const theme = createReefTheme(mode);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -365,6 +681,14 @@ function App() {
         <AppContent />
       </AuthProvider>
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeModeProvider>
+      <AppWrapper />
+    </ThemeModeProvider>
   );
 }
 

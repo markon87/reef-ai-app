@@ -5,6 +5,7 @@ export interface AnalysisResult {
   score: number
   summary?: string
   result?: string
+  generalAssessment?: string
   breakdown?: Record<string, any>
 }
 
@@ -105,6 +106,7 @@ export class TankSetupService {
             tank_setup_id: tankSetup.id,
             score: analysisResult.score,
             summary: analysisResult.summary || analysisResult.result || null,
+            general_assessment: analysisResult.generalAssessment || null,
             breakdown: analysisResult.breakdown || null
           })
 

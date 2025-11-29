@@ -1,0 +1,111 @@
+/* ReefAI CSS Custom Properties */
+
+/* Base Colors */
+:root {
+  --reef-blue: #003C71;      /* Deep ocean blue */
+  --reef-aqua: #00AEEF;      /* Vibrant aqua */
+  --reef-light-blue: #66D3FA; /* Soft water highlight */
+  --reef-dark-blue: #001F3F;  /* Dark deep-sea tone */
+  --reef-coral: #00C2A8;     /* Optional accent tone (techy sea-green) */
+  --reef-white: #F9FAFB;     /* Clean white */
+}
+
+/* Light Theme */
+:root[data-theme="light"] {
+  --color-bg: #F9FAFB;          /* Light background */
+  --color-surface: #E6F6FB;     /* Slightly aqua-tinted surface */
+  --color-text: #002B5B;        /* Deep text for readability */
+  --color-primary: #00AEEF;     /* Main brand aqua */
+  --color-primary-hover: #00C2A8;
+  --color-accent: #003C71;      /* Dark blue accent */
+  --color-border: #B8E1F9;      /* Subtle light border */
+  --color-card-bg: #FFFFFF;
+  --color-shadow: rgba(0, 60, 113, 0.1);
+}
+
+/* Dark Theme */
+:root[data-theme="dark"] {
+  --color-bg: #001F3F;          /* Deep navy background */
+  --color-surface: #002B5B;     /* Slightly lighter surface */
+  --color-text: #E6F6FB;        /* Soft aqua text */
+  --color-primary: #00AEEF;     /* Brand aqua */
+  --color-primary-hover: #66D3FA;
+  --color-accent: #00C2A8;      /* Sea-green accent */
+  --color-border: #004C80;      /* Dim blue border */
+  --color-card-bg: #003C71;
+  --color-shadow: rgba(0, 174, 239, 0.15);
+}
+
+/* Global Styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", "Roboto", "Helvetica", "Arial", sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-hover);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-primary);
+  color: var(--reef-white);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Utility classes */
+.reef-gradient-bg {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+}
+
+.reef-gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.reef-card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px var(--color-shadow);
+  backdrop-filter: blur(10px);
+}
+
+.reef-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+}

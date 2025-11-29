@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { AppBar, Toolbar, Typography, Box, Button } from '@mui/material';
-import { Waves, Login } from '@mui/icons-material';
+import { Typography, Box, Button, Container, alpha, useTheme, IconButton } from '@mui/material';
+import { Login, LightMode, DarkMode } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useThemeMode } from '../contexts/ThemeContext';
 import { UserMenu } from './UserMenu';
 import { AuthDialog } from './AuthDialog';
 
@@ -12,6 +13,8 @@ interface LayoutProps {
 export const Layout = ({ children }: LayoutProps) => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const { user } = useAuth();
+  const { mode, toggleTheme } = useThemeMode();
+  const theme = useTheme();
 
   return (
     <Box sx={{ 
@@ -21,79 +24,153 @@ export const Layout = ({ children }: LayoutProps) => {
       width: '100vw',
       margin: 0,
       padding: 0,
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      background: `linear-gradient(135deg, 
+        ${alpha(theme.palette.primary.main, 0.05)} 0%, 
+        ${alpha(theme.palette.secondary.main, 0.05)} 50%, 
+        ${alpha(theme.palette.primary.main, 0.05)} 100%
+      )`,
     }}>
       {/* Header */}
-      <AppBar 
-        position="static" 
-        elevation={2} 
-        sx={{ 
-          width: '100vw',
-          margin: 0,
-          '& .MuiContainer-root': {
-            maxWidth: 'none !important',
-            width: '100%'
-          }
+      <Box
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          backgroundColor: alpha(theme.palette.background.paper, 0.95),
+          backdropFilter: 'blur(10px)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         }}
       >
-        <Toolbar sx={{ 
-          width: '100%',
-          maxWidth: 'none !important',
-          margin: 0,
-          padding: 0,
-          px: { xs: 2, sm: 3, md: 4 },
-          '&.MuiToolbar-root': {
-            maxWidth: 'none !important'
-          }
-        }}>
-          <Waves sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            🐠 Reef AI - Aquarium Intelligence
-          </Typography>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              py: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                }}
+              >
+                🐠
+              </Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                ReefAI
+              </Typography>
+            </Box>
           
-          {/* Auth Section */}
-          {user ? (
-            <UserMenu />
-          ) : (
-            <Button
-              color="inherit"
-              startIcon={<Login />}
-              onClick={() => setAuthDialogOpen(true)}
-            >
-              Sign In
-            </Button>
-          )}
-        </Toolbar>
-      </AppBar>
-
-      {/* Main Content */}
-      <Box sx={{ 
-        flex: 1,
-        width: '100vw',
-        maxWidth: 'none !important',
-        margin: 0,
-        px: { xs: 2, sm: 3, md: 4 },
-        py: { xs: 2, sm: 3, md: 4 },
-        boxSizing: 'border-box'
-      }}>
-        {children}
+            {/* Theme Toggle & Auth Section */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Theme Toggle Button */}
+              <IconButton
+                onClick={toggleTheme}
+                sx={{
+                  color: theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                }}
+              >
+                {mode === 'light' ? <DarkMode /> : <LightMode />}
+              </IconButton>
+              
+              {/* Auth Section */}
+              {user ? (
+                <UserMenu />
+              ) : (
+                <Button
+                  variant="contained"
+                  startIcon={<Login />}
+                  onClick={() => setAuthDialogOpen(true)}
+                  sx={{
+                    borderRadius: 3,
+                    px: 4,
+                    py: 1.5,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                    },
+                  }}
+                >
+                  Sign In
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </Container>
       </Box>
 
+      {/* Main Content */}
+      <Container maxWidth="lg" sx={{ flex: 1, py: { xs: 3, md: 4 } }}>
+        {children}
+      </Container>
+
       {/* Footer */}
-      <Box 
-        component="footer" 
-        sx={{ 
-          py: 2, 
-          px: { xs: 2, sm: 3, md: 4 }, 
-          backgroundColor: 'background.paper',
-          borderTop: 1,
-          borderColor: 'divider',
-          width: '100%'
+      <Box
+        sx={{
+          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          py: 4,
         }}
       >
-        <Typography variant="body2" color="text.secondary" align="center">
-          © 2025 Reef AI - Your Aquarium Assistant
-        </Typography>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '1.2rem',
+                }}
+              >
+                🐠
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                ReefAI
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              © 2025 ReefAI. Built with ❤️ for the reef community.
+            </Typography>
+          </Box>
+        </Container>
       </Box>
 
       {/* Auth Dialog */}
