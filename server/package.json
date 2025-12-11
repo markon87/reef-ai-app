@@ -17,10 +17,14 @@
   "type": "commonjs",
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
+    "@types/multer": "^2.0.0",
+    "@types/uuid": "^10.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "openai": "^6.2.0"
+    "multer": "^2.0.2",
+    "openai": "^6.2.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

@@ -1,12 +1,17 @@
 import { Box, Typography, Divider } from '@mui/material';
 
 interface FormattedResponseProps {
-  content: string;
+  content?: string;
 }
 
-export const FormattedResponse = ({ content }: FormattedResponseProps) => {
+export const FormattedResponse = ({ content = "" }: FormattedResponseProps) => {
   // Split content into sections and format them
   const formatContent = (text: string) => {
+    // Handle undefined, null, or empty text
+    if (!text || typeof text !== 'string') {
+      return <Typography>No content to display</Typography>;
+    }
+    
     // Split by double line breaks to get sections
     const sections = text.split('\n\n').filter(section => section.trim());
     
