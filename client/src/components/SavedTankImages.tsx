@@ -33,6 +33,7 @@ interface UserTankImage {
   description?: string;
   uploaded_at: string;
   file_size: number;
+  url?: string;
 }
 
 interface AnalysisResult {
@@ -305,14 +306,44 @@ export const SavedTankImages = ({ onAnalyzeImage }: SavedTankImagesProps) => {
                 <Box
                   sx={{
                     height: 200,
-                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative'
+                    position: 'relative',
+                    overflow: 'hidden'
                   }}
                 >
-                  <ImageIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+                  {image.url ? (
+                    <Box
+                      component="img"
+                      src={image.url}
+                      alt={image.original_filename}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block'
+                      }}
+                      onError={(e) => {
+                        // Fallback to icon if image fails to load
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement?.querySelector('.fallback-icon')?.setAttribute('style', 'display: flex');
+                      }}
+                    />
+                  ) : null}
+                  <Box
+                    className="fallback-icon"
+                    sx={{
+                      position: image.url ? 'absolute' : 'static',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                      display: image.url ? 'none' : 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <ImageIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+                  </Box>
                   <IconButton
                     sx={{
                       position: 'absolute',

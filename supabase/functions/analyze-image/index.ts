@@ -50,9 +50,14 @@ serve(async (req) => {
       )
     }
 
-    // Convert image to base64 for OpenAI
+    // Convert image to base64 for OpenAI safely for large images
     const imageBuffer = await imageFile.arrayBuffer()
-    const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)))
+    const uint8Array = new Uint8Array(imageBuffer)
+    let binaryString = ''
+    for (let i = 0; i < uint8Array.length; i++) {
+      binaryString += String.fromCharCode(uint8Array[i])
+    }
+    const base64Image = btoa(binaryString)
 
     // Get OpenAI API key
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
@@ -79,6 +84,8 @@ serve(async (req) => {
       }
     } else {
       // Real OpenAI Vision API call
+      const promptText = 'You are a reef aquarium expert. Analyze this reef tank image in detail. Context: ' + (tankDescription || 'No additional context provided') + '\n\nProvide a comprehensive analysis covering equipment, water quality, livestock, and recommendations.\n\nRespond ONLY with valid JSON in this exact format:\n{\n  "score": 85,\n  "generalAssessment": "Detailed overall assessment",\n  "breakdown": {\n    "equipment": "Equipment analysis",\n    "waterParams": "Water quality assessment",\n    "livestock": "Livestock analysis",\n    "recommendations": "Specific recommendations"\n  },\n  "summary": "Brief summary",\n  "result": "Final assessment",\n  "imageAnalyzed": true,\n  "cached": false\n}\n\nProvide meaningful analysis, not placeholder text.'
+
       const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -93,7 +100,7 @@ serve(async (req) => {
               content: [
                 {
                   type: "text",
-                  text: `Analyze this reef aquarium image and provide a detailed assessment. Context: ${tankDescription || 'No additional context provided'}\n\nPlease analyze the image and provide your response as a JSON object with this exact structure:\n{\n  "score": <number 1-100>,\n  "generalAssessment": "<detailed overall assessment>",\n  "breakdown": {\n    "equipment": "<equipment analysis>",\n    "waterParams": "<water quality assessment>",\n    "livestock": "<fish and coral health>",\n    "recommendations": "<specific recommendations>"\n  },\n  "summary": "<brief summary>",\n  "result": "<final verdict>",\n  "imageAnalyzed": true,\n  "cached": false\n}`
+                  text: promptText
                 },
                 {
                   type: "image_url",
@@ -118,17 +125,18 @@ serve(async (req) => {
       try {
         aiResponse = JSON.parse(content)
       } catch (parseError) {
-        // Fallback if JSON parsing fails
+        // Fallback if JSON parsing fails - extract meaningful content
+        const score = content.match(/score[:\s]*(\d+)/i)?.[1] || '75'
         aiResponse = {
-          score: 75,
-          generalAssessment: content,
+          score: parseInt(score),
+          generalAssessment: content.substring(0, 300) + (content.length > 300 ? '...' : ''),
           breakdown: {
-            equipment: "Analysis completed",
-            waterParams: "See general assessment",
-            livestock: "See general assessment", 
-            recommendations: "See general assessment"
+            equipment: content.includes('equipment') ? content.match(/equipment[^.]*\./i)?.[0] || 'Equipment assessment included in general analysis.' : 'No specific equipment analysis available.',
+            waterParams: content.includes('water') ? content.match(/water[^.]*\./i)?.[0] || 'Water quality assessment included in general analysis.' : 'No specific water parameter analysis available.',
+            livestock: content.includes('fish|coral|livestock') ? content.match(/(fish|coral|livestock)[^.]*\./i)?.[0] || 'Livestock assessment included in general analysis.' : 'No specific livestock analysis available.',
+            recommendations: content.includes('recommend') ? content.match(/recommend[^.]*\./i)?.[0] || 'Recommendations included in general analysis.' : 'See general assessment for recommendations.'
           },
-          summary: "AI analysis completed",
+          summary: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
           result: content,
           imageAnalyzed: true,
           cached: false
