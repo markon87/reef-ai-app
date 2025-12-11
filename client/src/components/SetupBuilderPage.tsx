@@ -43,7 +43,7 @@ export const SetupBuilderPage = () => {
   const [analyzeTank, { 
     data: analysisResult, 
     isLoading, 
-    error: apiError,
+    error: _apiError,
     reset 
   }] = useAnalyzeTankMutation();
 
@@ -335,7 +335,7 @@ export const SetupBuilderPage = () => {
                   </Box>
 
                   {/* Analysis Breakdown */}
-                  <AnalysisBreakdownComponent breakdown={currentAnalysis.breakdown} />
+                  {currentAnalysis.breakdown && <AnalysisBreakdownComponent breakdown={currentAnalysis.breakdown} />}
 
                   {/* Formatted Response */}
                   <Box sx={{ mt: 3 }}>

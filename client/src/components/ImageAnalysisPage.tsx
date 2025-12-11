@@ -9,7 +9,6 @@ import {
   CircularProgress,
   Card,
   CardContent,
-  IconButton,
   Divider,
   Tabs,
   Tab,
@@ -23,7 +22,6 @@ import {
   Psychology,
   AutoFixHigh
 } from '@mui/icons-material';
-import { FormattedResponse } from './FormattedResponse';
 import { SetupScoreGauge } from './SetupScoreGauge';
 import { AnalysisBreakdownComponent } from './AnalysisBreakdown';
 import { SavedTankImages } from './SavedTankImages';
@@ -90,8 +88,12 @@ export const ImageAnalysisPage = () => {
     const file = event.dataTransfer.files[0];
     if (file) {
       // Create a synthetic event to reuse the same validation logic
+      const fileInput = document.createElement('input');
+      const fileList = new DataTransfer();
+      fileList.items.add(file);
+      fileInput.files = fileList.files;
       const syntheticEvent = {
-        target: { files: [file] }
+        target: fileInput
       } as React.ChangeEvent<HTMLInputElement>;
       handleImageSelect(syntheticEvent);
     }

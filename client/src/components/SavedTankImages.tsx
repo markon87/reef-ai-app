@@ -5,7 +5,6 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid,
   IconButton,
   Dialog,
   DialogTitle,
@@ -285,9 +284,17 @@ export const SavedTankImages = ({ onAnalyzeImage }: SavedTankImagesProps) => {
           </CardContent>
         </Card>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { 
+            xs: '1fr', 
+            sm: 'repeat(2, 1fr)', 
+            md: 'repeat(3, 1fr)' 
+          }, 
+          gap: 3 
+        }}>
           {images.map((image) => (
-            <Grid item xs={12} sm={6} md={4} key={image.id}>
+            <Box key={image.id}>
               <Card 
                 sx={{ 
                   height: '100%', 
@@ -358,9 +365,9 @@ export const SavedTankImages = ({ onAnalyzeImage }: SavedTankImagesProps) => {
                   </Button>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
 
       {/* Upload Dialog */}
