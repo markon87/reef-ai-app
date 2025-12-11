@@ -127,11 +127,11 @@ export const ImageAnalysisPage = () => {
       formData.append('image', selectedImage);
       formData.append('tankDescription', description);
 
-      // Check if we have VITE_API_BASE_URL configured, otherwise fallback to localhost
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiBaseUrl}/api/analyze-image`, {
+      // Use Supabase Edge Functions for image analysis
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://qalrrazrdxefsedrizgb.supabase.co/functions/v1';
+      const response = await fetch(`${apiUrl}/analyze-image`, {
         method: 'POST',
-        body: formData,
+        body: formData
       });
 
       const data = await response.json();

@@ -72,9 +72,9 @@ export const SavedTankImages = ({ onAnalyzeImage }: SavedTankImagesProps) => {
     setLoading(true);
     try {
       const token = session.access_token;
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://qalrrazrdxefsedrizgb.supabase.co/functions/v1';
       
-      const response = await fetch(`${apiBaseUrl}/api/user-tank-images`, {
+      const response = await fetch(`${apiUrl}/manage-images`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -123,13 +123,13 @@ export const SavedTankImages = ({ onAnalyzeImage }: SavedTankImagesProps) => {
     setUploading(true);
     try {
       const token = session.access_token;
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://qalrrazrdxefsedrizgb.supabase.co/functions/v1';
       
       const formData = new FormData();
       formData.append('image', selectedFile);
       formData.append('description', description);
 
-      const response = await fetch(`${apiBaseUrl}/api/upload-tank-image`, {
+      const response = await fetch(`${apiUrl}/upload-image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -158,19 +158,17 @@ export const SavedTankImages = ({ onAnalyzeImage }: SavedTankImagesProps) => {
 
   const handleDelete = async (imageId: string) => {
     if (!user || !session) return;
-    
+
     try {
       const token = session.access_token;
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://qalrrazrdxefsedrizgb.supabase.co/functions/v1';
       
-      const response = await fetch(`${apiBaseUrl}/api/user-tank-images/${imageId}`, {
+      const response = await fetch(`${apiUrl}/manage-images/${imageId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      });
-
-      if (!response.ok) {
+      });      if (!response.ok) {
         throw new Error('Failed to delete image');
       }
 
@@ -188,17 +186,15 @@ export const SavedTankImages = ({ onAnalyzeImage }: SavedTankImagesProps) => {
     setAnalyzing(imageId);
     try {
       const token = session.access_token;
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://qalrrazrdxefsedrizgb.supabase.co/functions/v1';
       
-      const response = await fetch(`${apiBaseUrl}/api/analyze-saved-image/${imageId}`, {
+      const response = await fetch(`${apiUrl}/analyze-saved-image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          tankDescription: ''
-        })
+        body: JSON.stringify({ imageId })
       });
 
       const data = await response.json();
