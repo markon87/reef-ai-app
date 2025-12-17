@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { LandingPage } from './components/LandingPage';
 import { SetupBuilderPage } from './components/SetupBuilderPage';
 import { ImageAnalysisPage } from './components/ImageAnalysisPage';
+import { ProfilePage } from './components/ProfilePage';
 import { Navigation } from './components/Navigation';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeModeProvider, useThemeMode } from './contexts/ThemeContext';
@@ -24,6 +25,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<SetupBuilderPage />} />
         <Route path="/image-analysis" element={<ImageAnalysisPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   IconButton,
   Menu,
@@ -22,6 +23,7 @@ import { useAuth } from '../contexts/AuthContext'
 export function UserMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const open = Boolean(anchorEl)
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -34,6 +36,11 @@ export function UserMenu() {
 
   const handleSignOut = async () => {
     await signOut()
+    handleClose()
+  }
+
+  const handleProfileClick = () => {
+    navigate('/profile')
     handleClose()
   }
 
@@ -106,7 +113,7 @@ export function UserMenu() {
         <Divider />
         
         {/* Menu Items */}
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleProfileClick}>
           <ListItemIcon>
             <Person fontSize="small" />
           </ListItemIcon>
