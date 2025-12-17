@@ -54,6 +54,11 @@ export function UserMenu() {
     handleClose()
   }
 
+  const handleSettingsClick = () => {
+    navigate('/settings')
+    handleClose()
+  }
+
   if (!user) return null
 
   const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'User'
@@ -144,7 +149,7 @@ export function UserMenu() {
           <ListItemText>Analysis History</ListItemText>
         </MenuItem>
         
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleSettingsClick}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
