@@ -1,20 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Box,
-  Paper,
   Typography,
   Avatar,
   Button,
   Card,
   CardContent,
   TextField,
-  Grid,
   Divider,
   IconButton,
   Alert,
   CircularProgress,
-  useTheme,
-  alpha
+  useTheme
 } from '@mui/material';
 import {
   Person,
@@ -343,8 +340,8 @@ export function ProfilePage() {
 
           <Divider sx={{ mb: 3 }} />
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+            <Box>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Display Name
               </Typography>
@@ -361,35 +358,35 @@ export function ProfilePage() {
                   {profileData.displayName}
                 </Typography>
               )}
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Email Address
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 {profileData.email}
               </Typography>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Account Created
               </Typography>
               <Typography variant="body1">
                 {formatDate(profileData.createdAt)}
               </Typography>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Account Type
               </Typography>
               <Typography variant="body1">
                 Standard User
               </Typography>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
           {isEditing && (
             <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'flex-end' }}>
