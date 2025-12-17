@@ -59,7 +59,23 @@ export const coralSpecies = [
   { id: 'xenia', name: 'Pulsing Xenia', category: 'Other', difficulty: 'Beginner', lighting: 'Medium', flow: 'Medium' },
 ];
 
-// Tank volume options
+// Tank volume options (values in liters for consistency)
+export const tankVolumesLiters = [
+  { value: 37.85, gallons: 10, liters: 38 },
+  { value: 75.7, gallons: 20, liters: 76 },
+  { value: 109.8, gallons: 29, liters: 110 },
+  { value: 151.4, gallons: 40, liters: 151 },
+  { value: 208.2, gallons: 55, liters: 208 },
+  { value: 283.9, gallons: 75, liters: 284 },
+  { value: 340.7, gallons: 90, liters: 341 },
+  { value: 454.2, gallons: 120, liters: 454 },
+  { value: 567.8, gallons: 150, liters: 568 },
+  { value: 681.4, gallons: 180, liters: 681 },
+  { value: 832.8, gallons: 220, liters: 833 },
+  { value: 1135.6, gallons: 300, liters: 1136 },
+];
+
+// Tank volume options (legacy - for backward compatibility)
 export const tankVolumes = [
   { value: 10, label: '10 gallons' },
   { value: 20, label: '20 gallons' },

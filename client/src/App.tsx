@@ -11,6 +11,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { Navigation } from './components/Navigation';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeModeProvider, useThemeMode } from './contexts/ThemeContext';
+import { UnitsProvider } from './contexts/UnitsContext';
 import { createReefTheme } from './theme';
 import './styles/reef-theme.css';
 
@@ -56,7 +57,9 @@ function App() {
   return (
     <AuthProvider>
       <ThemeModeProvider>
-        <AppWrapper />
+        <UnitsProvider>
+          <AppWrapper />
+        </UnitsProvider>
       </ThemeModeProvider>
     </AuthProvider>
   );

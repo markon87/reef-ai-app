@@ -18,7 +18,8 @@ import {
   type SelectChangeEvent
 } from '@mui/material';
 import { Add, Remove, Save } from '@mui/icons-material';
-import { fishSpecies, coralSpecies, tankVolumes, lightingOptions, filtrationOptions } from '../data/aquariumData';
+import { fishSpecies, coralSpecies, tankVolumesLiters, lightingOptions, filtrationOptions } from '../data/aquariumData';
+import { useUnits } from '../contexts/UnitsContext';
 
 export interface TankSetup {
   volume: number;
@@ -43,8 +44,10 @@ interface TankSetupFormProps {
 }
 
 export const TankSetupForm = ({ onSetupChange, initialSetup, onSaveSetup }: TankSetupFormProps) => {
+  const { formatVolume, parseVolume, getVolumeUnit, formatTemperature, parseTemperature, getTemperatureUnit } = useUnits();
+  
   const [setup, setSetup] = useState<TankSetup>({
-    volume: 75,
+    volume: tankVolumesLiters[5].value, // 75 gallons (283.9L)
     lighting: 'led-medium',
     filtration: [],
     fish: [],
@@ -137,9 +140,9 @@ export const TankSetupForm = ({ onSetupChange, initialSetup, onSaveSetup }: Tank
                   label="Tank Volume"
                   onChange={(e) => updateSetup({ volume: Number(e.target.value) })}
                 >
-                  {tankVolumes.map((volume) => (
+                  {tankVolumesLiters.map((volume) => (
                     <MenuItem key={volume.value} value={volume.value}>
-                      {volume.label}
+                      {formatVolume(volume.value)} {getVolumeUnit()}
                     </MenuItem>
                   ))}
                 </Select>
@@ -376,13 +379,19 @@ export const TankSetupForm = ({ onSetupChange, initialSetup, onSaveSetup }: Tank
             <TextField
               sx={{ minWidth: 150, flex: 1 }}
               type="number"
-              label="Temperature (°F)"
-              value={setup.waterParams.temperature || ''}
-              onChange={(e) => updateSetup({ 
-                waterParams: { ...setup.waterParams, temperature: Number(e.target.value) }
-              })}
-              inputProps={{ min: 70, max: 85 }}
-              placeholder="78"
+              label={`Temperature (${getTemperatureUnit()})`}
+              value={setup.waterParams.temperature ? formatTemperature(setup.waterParams.temperature) : ''}
+              onChange={(e) => {
+                const celsiusValue = parseTemperature(e.target.value);
+                updateSetup({ 
+                  waterParams: { ...setup.waterParams, temperature: celsiusValue }
+                });
+              }}
+              inputProps={{ 
+                min: getTemperatureUnit() === '°F' ? 70 : 21, 
+                max: getTemperatureUnit() === '°F' ? 85 : 29 
+              }}
+              placeholder={getTemperatureUnit() === '°F' ? '78' : '26'}
             />
           </Box>
         </CardContent>

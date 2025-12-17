@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useUnits } from '../contexts/UnitsContext';
 
 interface TankAnalysisResult {
   id: string;
@@ -53,6 +54,7 @@ interface ImageAnalysisResult {
 export function AnalysisHistoryPage() {
   const navigate = useNavigate();
   const { user, session } = useAuth();
+  const { formatVolume, getVolumeUnit } = useUnits();
   const [tabValue, setTabValue] = useState(0);
   const [tankAnalyses, setTankAnalyses] = useState<TankAnalysisResult[]>([]);
   const [imageAnalyses, setImageAnalyses] = useState<ImageAnalysisResult[]>([]);
@@ -141,7 +143,7 @@ export function AnalysisHistoryPage() {
                   </Typography>
                   {analysis.setup_volume && (
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Tank Volume: {analysis.setup_volume}L
+                      Tank Volume: {formatVolume(analysis.setup_volume)} {getVolumeUnit()}
                     </Typography>
                   )}
                 </Box>

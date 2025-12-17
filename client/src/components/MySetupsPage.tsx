@@ -25,6 +25,7 @@ import { TankSetupService, type SavedTankSetup } from '../services/tankSetupServ
 import { type TankSetup } from './TankSetupForm';
 import { type AnalysisResult } from '../services/tankSetupService';
 import { fishSpecies, coralSpecies } from '../data/aquariumData';
+import { useUnits } from '../contexts/UnitsContext';
 
 interface MySetupsPageProps {
   onLoadSetup: (setup: TankSetup) => void;
@@ -39,6 +40,7 @@ export function MySetupsPage({
   onLoadWithAnalysis, 
   onNavigateToSetup 
 }: MySetupsPageProps) {
+  const { formatVolume, getVolumeUnit, formatTemperature, getTemperatureUnit } = useUnits();
   const [savedSetups, setSavedSetups] = useState<SavedTankSetup[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -231,7 +233,7 @@ export function MySetupsPage({
                   </Box>
 
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Tank: {setup.volume}L • {setup.lighting} lighting
+                    Tank: {formatVolume(setup.volume)} {getVolumeUnit()} • {setup.lighting} lighting
                   </Typography>
 
                   {/* Fish Species */}

@@ -33,6 +33,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useUnits } from '../contexts/UnitsContext';
 
 interface UserSettings {
   displayUnits: 'imperial' | 'metric';
@@ -43,6 +44,7 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const theme = useTheme();
   const { user, session } = useAuth();
+  const { unitSystem, setUnitSystem } = useUnits();
   
   const [settings, setSettings] = useState<UserSettings>({
     displayUnits: 'imperial',
@@ -85,7 +87,12 @@ export function SettingsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setSettings(data.settings || settings);
+        const loadedSettings = data.settings || settings;
+        setSettings(loadedSettings);
+        // Sync with UnitsContext
+        if (loadedSettings.displayUnits) {
+          setUnitSystem(loadedSettings.displayUnits);
+        }
       }
     } catch (err) {
       console.error('Failed to load settings:', err);
@@ -117,6 +124,10 @@ export function SettingsPage() {
       }
 
       setSettings(updatedSettings);
+      // Sync with UnitsContext
+      if (updatedSettings.displayUnits) {
+        setUnitSystem(updatedSettings.displayUnits);
+      }
       setSuccess('Settings saved successfully!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
