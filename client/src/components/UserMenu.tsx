@@ -44,6 +44,16 @@ export function UserMenu() {
     handleClose()
   }
 
+  const handleMySetupsClick = () => {
+    navigate('/my-setups')
+    handleClose()
+  }
+
+  const handleAnalysisHistoryClick = () => {
+    navigate('/analysis-history')
+    handleClose()
+  }
+
   if (!user) return null
 
   const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'User'
@@ -120,14 +130,14 @@ export function UserMenu() {
           <ListItemText>Profile</ListItemText>
         </MenuItem>
         
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleMySetupsClick}>
           <ListItemIcon>
             <Save fontSize="small" />
           </ListItemIcon>
           <ListItemText>My Tank Setups</ListItemText>
         </MenuItem>
         
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleAnalysisHistoryClick}>
           <ListItemIcon>
             <History fontSize="small" />
           </ListItemIcon>

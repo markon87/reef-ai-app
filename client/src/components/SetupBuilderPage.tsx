@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Card, 
   CardContent, 
@@ -29,6 +30,7 @@ import { useAnalyzeTankMutation } from '../store/api';
 export const SetupBuilderPage = () => {
   const theme = useTheme();
   const { user } = useAuth();
+  const location = useLocation();
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [setupName, setSetupName] = useState("");
   const [setupToSave, setSetupToSave] = useState<TankSetup | null>(null);
@@ -46,6 +48,29 @@ export const SetupBuilderPage = () => {
     error: _apiError,
     reset 
   }] = useAnalyzeTankMutation();
+
+  // Handle setup loading from My Setups page
+  useEffect(() => {
+    if (location.state?.loadSetup) {
+      const { loadSetup, analysis, analyze } = location.state;
+      setTankSetup(loadSetup);
+      setTabValue(0); // Switch to setup form tab
+      
+      if (analysis) {
+        setLoadedAnalysis(analysis);
+      }
+      
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+      
+      // Auto-trigger analysis if requested (after state is set)
+      if (analyze) {
+        setTimeout(() => {
+          handleAnalyze();
+        }, 100);
+      }
+    }
+  }, [location.state]);
 
   // Use loaded analysis if available, otherwise use RTK Query result
   const currentAnalysis = loadedAnalysis || analysisResult;

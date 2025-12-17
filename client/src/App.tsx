@@ -5,6 +5,8 @@ import { LandingPage } from './components/LandingPage';
 import { SetupBuilderPage } from './components/SetupBuilderPage';
 import { ImageAnalysisPage } from './components/ImageAnalysisPage';
 import { ProfilePage } from './components/ProfilePage';
+import { MySetupsPageWrapper } from './components/MySetupsPageWrapper';
+import { AnalysisHistoryPage } from './components/AnalysisHistoryPage';
 import { Navigation } from './components/Navigation';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeModeProvider, useThemeMode } from './contexts/ThemeContext';
@@ -26,6 +28,8 @@ function AppContent() {
         <Route path="/" element={<SetupBuilderPage />} />
         <Route path="/image-analysis" element={<ImageAnalysisPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/my-setups" element={<MySetupsPageWrapper />} />
+        <Route path="/analysis-history" element={<AnalysisHistoryPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
