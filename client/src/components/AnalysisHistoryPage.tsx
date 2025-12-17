@@ -12,13 +12,11 @@ import {
   CircularProgress,
   Divider,
   Avatar,
-  IconButton,
   Paper
 } from '@mui/material';
 import {
   ArrowBack,
   History,
-  Analytics,
   PhotoCamera,
   Build,
   CalendarToday,

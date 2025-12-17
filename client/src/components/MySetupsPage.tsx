@@ -40,7 +40,7 @@ export function MySetupsPage({
   onLoadWithAnalysis, 
   onNavigateToSetup 
 }: MySetupsPageProps) {
-  const { formatVolume, getVolumeUnit, formatTemperature, getTemperatureUnit } = useUnits();
+  const { formatVolume, getVolumeUnit } = useUnits();
   const [savedSetups, setSavedSetups] = useState<SavedTankSetup[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

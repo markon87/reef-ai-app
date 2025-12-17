@@ -44,7 +44,7 @@ interface TankSetupFormProps {
 }
 
 export const TankSetupForm = ({ onSetupChange, initialSetup, onSaveSetup }: TankSetupFormProps) => {
-  const { formatVolume, parseVolume, getVolumeUnit, formatTemperature, parseTemperature, getTemperatureUnit } = useUnits();
+  const { formatVolume, getVolumeUnit, formatTemperature, parseTemperature, getTemperatureUnit } = useUnits();
   
   const [setup, setSetup] = useState<TankSetup>({
     volume: tankVolumesLiters[5].value, // 75 gallons (283.9L)

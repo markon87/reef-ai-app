@@ -17,9 +17,7 @@ import {
   RadioGroup,
   Radio,
   FormControl,
-  FormLabel,
-  CircularProgress,
-  useTheme
+  CircularProgress
 } from '@mui/material';
 import {
   ArrowBack,
@@ -42,9 +40,8 @@ interface UserSettings {
 
 export function SettingsPage() {
   const navigate = useNavigate();
-  const theme = useTheme();
   const { user, session } = useAuth();
-  const { unitSystem, setUnitSystem } = useUnits();
+  const { setUnitSystem } = useUnits();
   
   const [settings, setSettings] = useState<UserSettings>({
     displayUnits: 'imperial',
@@ -156,7 +153,7 @@ export function SettingsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({ 
           currentPassword,
@@ -192,7 +189,7 @@ export function SettingsPage() {
       
       const response = await fetch(`${apiUrl}/export-user-data`, {
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session?.access_token}`
         }
       });
 
@@ -237,7 +234,7 @@ export function SettingsPage() {
       const response = await fetch(`${apiUrl}/delete-account`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session?.access_token}`
         }
       });
 
